@@ -475,7 +475,9 @@ extern NSString *UZKErrorDomain;
  */
 - (BOOL)checkDataIntegrityOfFile:(NSString *)filePath;
 
-
+/// SGIOS Override
+/// @param completion completion description
+- (BOOL)extractImageFileCGSizeWithCompletion:(void(^)(NSArray<NSDictionary<NSString *, NSString *> *> *data))completion;
 
 #pragma mark - Write Methods
 

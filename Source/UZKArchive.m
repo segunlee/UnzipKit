@@ -4,6 +4,7 @@
 //
 //
 
+#import <UIKit/UIKit.h>
 #import "UZKArchive.h"
 
 #import "zip.h"
@@ -1047,6 +1048,68 @@ NS_DESIGNATED_INITIALIZER
     }
     
     return success && dataIsValid;
+}
+
+- (BOOL)extractImageFileCGSizeWithCompletion:(void(^)(NSArray<NSDictionary<NSString *, NSString *> *> *data))completion {
+	__weak UZKArchive *welf = self;
+	const NSUInteger bufferSize = 4096; //Arbitrary
+	
+	BOOL success = [self performActionWithArchiveOpen:^(NSError * __autoreleasing*innerError) {
+		NSArray<NSString *> *fileNames = [self listFilenames:NULL];
+		fileNames = [fileNames sortedArrayUsingComparator:^NSComparisonResult(NSString *obj1, NSString *obj2) {
+			return [obj1 compare:obj2 options:NSNumericSearch];
+		}];
+		NSMutableArray *collector = [NSMutableArray new];
+		for (NSString *fileName in fileNames) {
+			if (NO == [@[@"JPG", @"JPEG", @"PNG", @"GIF"] containsObject:fileName.pathExtension.uppercaseString]) {
+				continue;
+			}
+			
+			if (![welf locateFileInZip:fileName error:innerError]) {
+				continue;
+			}
+			
+			UZKFileInfo *info = [welf currentFileInZipInfo:innerError];
+			if (!info) {
+				continue;
+			}
+			
+			if (![welf openFile:innerError]) {
+				continue;
+			}
+			
+			NSMutableData *collectData = [NSMutableData new];
+			for (;;) {
+				NSMutableData *data = [NSMutableData dataWithLength:bufferSize];
+				int bytesRead = unzReadCurrentFile(welf.unzFile, data.mutableBytes, (unsigned)bufferSize);
+				
+				if (bytesRead < 0) {
+					break;
+				}
+				else if (bytesRead == 0) {
+					break;
+				}
+				
+				[collectData appendData:data];
+				
+				data.length = bytesRead;
+				UIImage *image = [[UIImage alloc] initWithData:collectData];
+				if (image) {
+					[collector addObject:@{@"F": fileName, @"S": NSStringFromCGSize(image.size)}];
+					break;
+				}
+			}
+			
+			if (collectData.length == 0) {
+				[collector addObject:@{@"F": fileName, @"S": NSStringFromCGSize(CGSizeZero)}];
+			}
+		}
+		
+		unzCloseCurrentFile(welf.unzFile);
+		action(collector);
+		
+	} inMode:UZKFileModeUnzip error:NULL];
+	return success;
 }
 
 
