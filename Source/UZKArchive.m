@@ -1106,7 +1106,7 @@ NS_DESIGNATED_INITIALIZER
 		}
 		
 		unzCloseCurrentFile(welf.unzFile);
-		action(collector);
+		completion(collector);
 		
 	} inMode:UZKFileModeUnzip error:NULL];
 	return success;
