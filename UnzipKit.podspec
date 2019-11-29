@@ -1,12 +1,13 @@
 Pod::Spec.new do |s|
   s.name             = "UnzipKit"
-  s.version          = ENV["TRAVIS_TAG"]
+  s.version          = "1.0.0"
   s.summary          = "An Objective-C zlib wrapper for compressing and decompressing Zip files"
   s.license          = "BSD"
   s.homepage         = "https://github.com/abbeycode/UnzipKit"
   s.author           = { "Dov Frankel" => "dov@abbey-code.com" }
   s.social_media_url = "https://twitter.com/dovfrankel"
-  s.source           = { :git => "https://github.com/abbeycode/UnzipKit.git", :tag => "#{s.version}" }
+  s.source           = { :git => "https://github.com/abbeycode/UnzipKit.git" }
+  
   s.ios.deployment_target = "9.0"
   s.osx.deployment_target = "10.9"
   s.requires_arc = 'Source/**/*'
