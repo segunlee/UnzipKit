@@ -1061,7 +1061,7 @@ NS_DESIGNATED_INITIALIZER
 		}];
 		NSMutableArray *collector = [NSMutableArray new];
 		for (NSString *fileName in fileNames) {
-			if (NO == [@[@"JPG", @"JPEG", @"PNG", @"GIF"] containsObject:fileName.pathExtension.uppercaseString]) {
+			if (NO == [@[@"JPG", @"JPEG", @"PNG", @"GIF", @"BMP"] containsObject:fileName.pathExtension.uppercaseString]) {
 				continue;
 			}
 			
