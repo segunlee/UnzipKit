@@ -1060,50 +1060,52 @@ NS_DESIGNATED_INITIALIZER
 			return [obj1 compare:obj2 options:NSNumericSearch];
 		}];
 		NSMutableArray *collector = [NSMutableArray new];
-		for (NSString *fileName in fileNames) {
-			if (NO == [@[@"JPG", @"JPEG", @"PNG", @"GIF", @"BMP"] containsObject:fileName.pathExtension.uppercaseString]) {
-				continue;
-			}
-			
-			if (![welf locateFileInZip:fileName error:innerError]) {
-				continue;
-			}
-			
-			UZKFileInfo *info = [welf currentFileInZipInfo:innerError];
-			if (!info) {
-				continue;
-			}
-			
-			if (![welf openFile:innerError]) {
-				continue;
-			}
-			
-			NSMutableData *collectData = [NSMutableData new];
-			for (;;) {
-				NSMutableData *data = [NSMutableData dataWithLength:bufferSize];
-				int bytesRead = unzReadCurrentFile(welf.unzFile, data.mutableBytes, (unsigned)bufferSize);
-				
-				if (bytesRead < 0) {
-					break;
-				}
-				else if (bytesRead == 0) {
-					break;
-				}
-				
-				[collectData appendData:data];
-				
-				data.length = bytesRead;
-				UIImage *image = [[UIImage alloc] initWithData:collectData];
-				if (image) {
-					[collector addObject:@{@"F": fileName, @"S": NSStringFromCGSize(image.size)}];
-					break;
-				}
-			}
-			
-			if (collectData.length == 0) {
-				[collector addObject:@{@"F": fileName, @"S": NSStringFromCGSize(CGSizeZero)}];
-			}
-		}
+        for (NSString *fileName in fileNames) {
+            @autoreleasepool {
+                if (NO == [@[@"JPG", @"JPEG", @"PNG", @"GIF", @"BMP"] containsObject:fileName.pathExtension.uppercaseString]) {
+                    continue;
+                }
+                
+                if (![welf locateFileInZip:fileName error:innerError]) {
+                    continue;
+                }
+                
+                UZKFileInfo *info = [welf currentFileInZipInfo:innerError];
+                if (!info) {
+                    continue;
+                }
+                
+                if (![welf openFile:innerError]) {
+                    continue;
+                }
+                
+                NSMutableData *collectData = [NSMutableData new];
+                for (;;) {
+                    NSMutableData *data = [NSMutableData dataWithLength:bufferSize];
+                    int bytesRead = unzReadCurrentFile(welf.unzFile, data.mutableBytes, (unsigned)bufferSize);
+                    
+                    if (bytesRead < 0) {
+                        break;
+                    }
+                    else if (bytesRead == 0) {
+                        break;
+                    }
+                    
+                    [collectData appendData:data];
+                    
+                    data.length = bytesRead;
+                    UIImage *image = [[UIImage alloc] initWithData:collectData];
+                    if (image) {
+                        [collector addObject:@{@"F": fileName, @"S": NSStringFromCGSize(image.size)}];
+                        break;
+                    }
+                }
+                
+                if (collectData.length == 0) {
+                    [collector addObject:@{@"F": fileName, @"S": NSStringFromCGSize(CGSizeZero)}];
+                }
+            }
+        }
 		
 		unzCloseCurrentFile(welf.unzFile);
 		completion(collector);
